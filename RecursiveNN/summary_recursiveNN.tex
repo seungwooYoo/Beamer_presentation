@@ -193,6 +193,39 @@
 	\end{itemize}
 	\end{columns}
 }
+\frame
+{
+	\begin{itemize}
+		\item After computing the scores for all pairs of neighboring segments, 
+		the algorithm selects the pair received the highest score. 
+		\item Let the score $s_{ij}$ be the highest score
+		\begin{enumerate}
+			\item Remove $[a_i, a_j] $ from $C$ as well as all other pairs with 
+			either $a_i$ or $a_j$ in them. 
+			\item Update the adjacency matrix reflecting the new segment having the neighbors of both child segments
+			\item Add potential new child pairs to $C$:
+			$$ C = C - \{[a_i,a_j]\} - \{[a_j, a_i]\} $$
+			$ C = C \cup \{[p_{(i,j)}, a_k]: a_k $ has boundary with $i$ or $j\}$
+		\end{enumerate}
+	\end{itemize}
+}
+\frame
+{
+	\begin{columns}
+	\column{0.45\textwidth}
+	\begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=2.in]{images/fig3.png}   
+		\end{center}   
+	\end{figure}
+	\column{0.73\textwidth} 
+	\begin{itemize}
+		\item For example, if we merge $[a_4, a_5]$ then 
+		$$ C = \{[a_1, a_2], [a_1, a_3], [a_2, a_1], [a_2, p_{(4,5)}], $$
+		$$ [a_3, a_1], [a_3, p_{(4,5)}], [p_{(4,5)}, a_2], [p_{(4,5)}, a_3]\} $$
+	\end{itemize}
+	\end{columns}
+}
 \subsection{Learning}
 \frame
 {
