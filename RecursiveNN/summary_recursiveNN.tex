@@ -178,17 +178,18 @@
 \frame
 {
 	\begin{columns}
-	\column{0.5\textwidth}
+	\column{0.4\textwidth}
 	\begin{figure}[ht]  
 		\begin{center}
-			\includegraphics[width=2.1in]{images/fig3.png}   
+			\includegraphics[width=2.2in]{images/fig4.png}   
 		\end{center}   
 	\end{figure}
 	\column{0.6\textwidth} 
 	\begin{itemize}
-		\item For example :
-		$$ C = \{[a_1, a_2], [a_1, a_3], [a_2, a_1], $$ 
-		$$ [a_2, a_4], \dots  [a_4,a_5], [a_5, a_4]\} $$
+		\item The network computes the potential 
+		parent representation in recursive way for the possible child nodes as $ \textit{p} $
+		\item Local score can be calculated using a row vector 
+		$ W^{score} \in \mathbb{R}^{1\times n} $
 	\end{itemize}
 	\end{columns}
 }
