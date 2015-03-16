@@ -4,7 +4,7 @@
 \usepackage{amsmath}
 \newcommand{\argmax}{\operatornamewithlimits{argmax}}
 
-\title{Parsing Natural Scenes and Natural Language with Recursive Neural Networks}
+\title{Parsing Natural Scenes and Natural Language with Recursive Neural Networks - ICML11}
 \author{Seungwoo Yoo}
 \date{\today}
 
@@ -235,6 +235,32 @@
 \frame
 {
   \frametitle{Parsing Natural Scene Images}
+  \begin{figure}[ht]  
+  	\begin{center}
+  		\includegraphics[width=3.1in]{images/ex5.png}   
+		\caption{Pixel level multi-class segmentation accuracies. Stanford background datset is used and run five-fold crossvalidation. (Simply label the superpixels by their most likely class based on RNN)}
+	\end{center}
+  \end{figure}
+}
+\frame
+{
+  \begin{figure}[ht]  
+  	\begin{center}
+  		\includegraphics[height=2.3in]{images/ex2.png}   
+		\caption{Nearest neighbor image region tree - visualize neareset neighbor super segment using Euclidean distance between the vector representations.}
+	\end{center}
+  \end{figure}
+}
+\frame
+{
+  \begin{figure}[ht]  
+  	\begin{center}
+  		\includegraphics[height=3.in]{images/ex1.png}   
+	\end{center}
+  \end{figure}
+}
+\frame
+{
   \begin{columns}
   \column{0.5\textwidth}
   \begin{figure}[ht]  
@@ -250,12 +276,9 @@
   \end{figure}
   \end{columns}
 }
-\subsection{Scene Classification}
+\subsection{Text Parsing and Nearest Neighbor Phrases}
 \frame
 {
-}
-\subsection{Supervised Text Parsing}
-\frame
-{
+  \frametitle{Supervised Parsing}
 }
 \end{document}
