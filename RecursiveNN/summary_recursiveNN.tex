@@ -107,6 +107,7 @@
 		\item A set of activation vectors ${a_1, \dots, a_{N_{segs}}}$
 		\item A symmetric adjacency matrix $ A $
 		\end{enumerate}
+		\item We have labels $l$ for all segments $\rightarrow$ can define a set of correct trees $Y(x, l)$ 
 	\end{itemize}
 	\end{columns}
 }
@@ -114,11 +115,12 @@
 {
 	\frametitle{Max-Margin Estimation}
 	\begin{itemize}
-		\item Define a structured margin loss $\Delta(x,l,\hat{y})$ similar to \textit{Taskar et al., 2004}
+		\item Define a structured margin loss $\Delta(x,l,\hat{y})$ similar to \textit{Taskar et. al., 2004}
 		\begin{Definition}
 		$$ \Delta(x,l, \hat{y}) = \kappa \sum_{d \in \textbf{N}(\hat{y})} \textbf{1}\{\textit{subTree}(d) \notin Y(x,l)\}$$
+		where $ \textbf{N}(\hat{y}) $ is the set of non-terminal nodes
 		\end{Definition}
-		\item The loss should be increased - when a segment merges with another one of a different label before merging with all its neighbors of the same label. 
+		\item The loss increases when a segment merges with another one of a different label before merging with all its neighbors of the same label. 
 		\item Formulated by checking whether the sub-tree $\textit{subTree}(d)$ underneath a nonterminal node $d$ 
 		in $\hat{y}$ appears in any of the ground truth trees of $Y(x,l)$
 	\end{itemize}
@@ -130,8 +132,10 @@
 		$$ f_{\theta}(x) = \argmax_{\hat{y}\in\tau(x)} s(\text{RNN}(\theta, x, \hat{y}))$$
 		where $\theta$ are all the parameters to cpompute a score $ s $ with an RNN and $ \tau(x) $
 		denotes the set of all possible trees that can be constructed from an input x. 
-		\item Margin constraints (score of the highest scoring correct tree $y_i$ to be larger up to a margin defined by the loss $ \Delta $)
+		\item Margin constraints (score of the highest scoring correct tree $y_i$ 
+		to be larger up to a margin defined by the loss $ \Delta $)
 		$$ s(\text(RNN)(\theta, x_i, y_i)) \geq s(\text{RNN}(\theta, x_i, \hat{y})) + \Delta(x_i, l_i, \hat{y})$$
+		where $\forall i, \hat{y} \in \tau(x_i)$
 	\end{itemize}
 }
 \frame
@@ -140,22 +144,28 @@
 		\item Regularized risk function :
 	\end{itemize}
 		$$ J(\theta) = \frac{1}{N}\sum_{i=1}^N r_i(\theta) + \frac{\lambda}{2}||\theta||^2 \; where$$
-		$$ r_i(\theta) = \max_{\hat{y}\in\tau(x_i)} s(\text{RNN}(\theta, x, \hat{y}) + \Delta(x_i, l_i, \hat{y})) - 
+		$$ r_i(\theta) = \max_{\hat{y}\in\tau(x_i)} (s(\text{RNN}(\theta, x, \hat{y}) + \Delta(x_i, l_i, \hat{y})) - 
 		\max_{y_i \in Y_{(x_i, l_i)}} (s\text{RNN}(\theta, x_i, y_i)) $$
 
 	\begin{itemize}
 		\item Minimize this objective $\rightarrow$ maximizes the correct tree's score and minimizes (up to a margin) 
-		the score of the highest scoring but incorrect tree. 
+		the score of the highest scoring 
 	\end{itemize}
 }
 \frame
 {
 	\frametitle{Greedy Structure Prediction of RNNs}
 	\begin{itemize}
+		\item Hard to find an optimal structure 
+		\begin{itemize}
 		\item No efficient algorithms for RNN setting and $\exists$ exponentially 
 		many possible parse trees $\rightarrow$ greedy approximation
-		\item Find the pairs of neighboring segments and adds their activations to a set of potential child node pairs:
-		$$ C = {[a_i, a_j]: A(i,j) = 1} $$
+		\end{itemize}
+		\item Greedy approximation 
+		\begin{itemize}
+		\item Find the pairs of neighboring segments and adds their semantic features to a set of potential child node pairs:
+		$$ C = \{[a_i, a_j]: A(i,j) = 1\} $$
+		\end{itemize}
 	\end{itemize}
 }
 \frame
@@ -226,9 +236,61 @@
 	\end{itemize}
 	\end{columns}
 }
+\frame
+{
+	\begin{itemize}
+		\item The merging process repteats until all pairs are merged
+		\begin{itemize}
+		\item The smae network (with parameters $W, b, W^{score}$) is \emph{recursively} applied
+		\item Tree can be recovered by unfolding the decision steps
+		\item Final score for structure prediction (sum of all the local decision) :
+		$$ s(RNN(\theta, x, \hat{y})) = \sum_{d\in N(\hat{y})} s_d  $$ 
+		\end{itemize}
+	\end{itemize}
+}
+\frame
+{
+	\begin{columns}
+	\column{0.45\textwidth}
+	\begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=2.in]{images/fig3.png}   
+		\end{center}   
+	\end{figure}
+	\column{0.73\textwidth} 
+	\begin{itemize}
+		\item Assume the next highest score was $s_{(4,5),3)}$
+		$$ C = \{[a_1, a_2], [a_1, p_{((4,5), 3)}], [a_2, a_1], $$
+		$$ [a_2, p_{((4,5), 3)}], [p_{((4,5), 3)}, a_1], [p_{((4,5), 3)}, a_2]\} $$
+		\item Finally, merge segment $(1,2) \rightarrow$ right bottom tree. 
+	\end{itemize}
+	\end{columns}
+}
+\frame
+{
+	\frametitle{Category Classifiers in the Tree}
+	\begin{itemize}
+		\item Can add a softmax layer to each RNN parent node (after removing scoring layer) to predict class labels:
+		$$ label_p = softmax(W^{label}p) $$ 
+		\item Minimizing the cross-entropy error $\rightarrow$ errors can be backpropagated.
+	\end{itemize}
+}
 \subsection{Learning}
 \frame
 {
+	\frametitle{Minimize the loss}
+	\begin{itemize}
+		\item Objective $J$ is not differentiabl due to hinge loss $\rightarrow$
+		generate gradient descent via the subgradient method for structure learning
+		\begin{itemize}
+			\item Model parameter $\theta = (W^{sem}, W, W^{score}, W^{label})$
+			$$ \partial J $$
+		\end{itemize}
+	\end{itemize}
+}
+\frame
+{
+	\frametitle{Backpropagation through Structure (BPTS)}
 }
 \section{Experimental Results}
 \subsection{Scene Understanding: Segmentation and Annotation}
