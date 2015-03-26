@@ -15,7 +15,7 @@
 \frame{\tableofcontents}
 
 \section{Introduction}
-\subsection{Recursive structure}
+\subsection{Introduction to RNN}
 \frame
 {
   \frametitle{Parsing Natural Structural Examples}
@@ -47,19 +47,20 @@
 	\begin{itemize}
 		\item RNN can compute (for scene parsing):
 			\begin{enumerate}
-			\item a score that is higher when neighboring regions should be merged int a larger region
+			\item a score that is higher when neighboring regions should be merged into a larger region
 			\item a new semantic feature representation for this larger region and its class labels (e.g., \textit{building} or \textit{street})
 			\end{enumerate}
 		\item Contribution points
 			\begin{itemize}
-			\item First deep learning method to achieve state-of-the-art results on segmentation and annotations of complex scenes. 
-			\item For scene classification, learned features outperfor state of the art methos such as Gist descriptor 
+			\item First deep learning method to achieve state-of-the-art results on segmentation and annotations of complex scenes. (ICML11)
+			\item For scene classification, learned features outperform state of the art methos such as Gist descriptor 
 			\item Code for the RNN model is available at \url{http://www.socher.org}
 			\end{itemize}
 	\end{itemize}
 }
 \section{Algorithm Details}
-\subsection{Mapping Segments and Words into Syntactico-Semantic Space}
+\frame{\tableofcontents}
+\subsection{Mapping Segments and Words into Syntactic-Semantic Space}
 \frame
 {
 	\frametitle{Input Representation of Scene Images}
@@ -104,7 +105,7 @@
 	\item Goal : Learn a function $ f:\textit{X}\rightarrow\textit{Y} $
 	\item Input $ x $ consists of two parts:
 		\begin{enumerate}
-		\item A set of activation vectors ${a_1, \dots, a_{N_{segs}}}$
+		\item A set of activation vectors (semantic features) ${a_1, \dots, a_{N_{segs}}}$
 		\item A symmetric adjacency matrix $ A $
 		\end{enumerate}
 		\item We have labels $l$ for all segments $\rightarrow$ can define a set of correct trees $Y(x, l)$ 
@@ -130,11 +131,11 @@
 	\begin{itemize}
 		\item Search for a function $ f $ with small expected loss on unseen inputs:
 		$$ f_{\theta}(x) = \argmax_{\hat{y}\in\tau(x)} s(\text{RNN}(\theta, x, \hat{y}))$$
-		where $\theta$ are all the parameters to cpompute a score $ s $ with an RNN and $ \tau(x) $
+		where $\theta$ are all the parameters to compute a score $ s $ with an RNN and $ \tau(x) $
 		denotes the set of all possible trees that can be constructed from an input x. 
 		\item Margin constraints (score of the highest scoring correct tree $y_i$ 
 		to be larger up to a margin defined by the loss $ \Delta $)
-		$$ s(\text(RNN)(\theta, x_i, y_i)) \geq s(\text{RNN}(\theta, x_i, \hat{y})) + \Delta(x_i, l_i, \hat{y})$$
+		$$ s(\text{RNN}(\theta, x_i, y_i)) \geq s(\text{RNN}(\theta, x_i, \hat{y})) + \Delta(x_i, l_i, \hat{y})$$
 		where $\forall i, \hat{y} \in \tau(x_i)$
 	\end{itemize}
 }
@@ -191,7 +192,7 @@
 	\column{0.4\textwidth}
 	\begin{figure}[ht]  
 		\begin{center}
-			\includegraphics[width=2.2in]{images/fig4.png}   
+			\includegraphics[width=2.25in]{images/fig4.png}   
 		\end{center}   
 	\end{figure}
 	\column{0.6\textwidth} 
@@ -239,12 +240,14 @@
 \frame
 {
 	\begin{itemize}
-		\item The merging process repteats until all pairs are merged
+		\item The merging process repeats until all pairs are merged
 		\begin{itemize}
-		\item The smae network (with parameters $W, b, W^{score}$) is \emph{recursively} applied
+		\item The same network (with parameters $W, b, W^{score}$) is \emph{recursively} applied
 		\item Tree can be recovered by unfolding the decision steps
 		\item Final score for structure prediction (sum of all the local decision) :
-		$$ s(RNN(\theta, x, \hat{y})) = \sum_{d\in N(\hat{y})} s_d  $$ 
+		$$ s(\text{RNN}(\theta, x, \hat{y})) = \sum_{d\in N(\hat{y})} s_d  $$ 
+		$$ s_d = W^{score}_d p $$ 
+		$$ p = f(W[c_i;c_j] + b) $$
 		\end{itemize}
 	\end{itemize}
 }
@@ -259,7 +262,7 @@
 	\end{figure}
 	\column{0.73\textwidth} 
 	\begin{itemize}
-		\item Assume the next highest score was $s_{(4,5),3)}$
+		\item Assume the next highest score was $s_{((4,5),3)}$
 		$$ C = \{[a_1, a_2], [a_1, p_{((4,5), 3)}], [a_2, a_1], $$
 		$$ [a_2, p_{((4,5), 3)}], [p_{((4,5), 3)}, a_1], [p_{((4,5), 3)}, a_2]\} $$
 		\item Finally, merge segment $(1,2) \rightarrow$ right bottom tree. 
@@ -283,16 +286,31 @@
 		\item Objective $J$ is not differentiabl due to hinge loss $\rightarrow$
 		generate gradient descent via the subgradient method for structure learning
 		\begin{itemize}
-			\item Model parameter $\theta = (W^{sem}, W, W^{score}, W^{label})$
-			$$ \partial J $$
-		\end{itemize}
+			\item Model parameter $\theta = (W^{sem}, W, W^{score}, W^{label}), $ then gradient becomes : 
+			$$ \frac{\partial J}{\partial \theta} = \frac{1}{N} \sum_i \frac{\partial s(\hat{y}_i)}{\partial \theta} 
+			- \frac{\partial s(y_i)}{\partial \theta} + 	\lambda \theta $$ where $s(\hat{y}_i) = s(\text{RNN}(\theta, x_i, \hat{y}_{max (\tau(x_i))})) $ and
+			$ s(y_i) = s(\text{RNN}(\theta, x_i, y_{max(Y(x_i, l_i))})) $
+			\item To calculate gradients, use backpropagation through structure (BPTS - Goller \& K$\ddot{\text{u}}$chler, 1996)
+		\end{itemize}		
 	\end{itemize}
 }
 \frame
 {
 	\frametitle{Backpropagation through Structure (BPTS)}
+	\begin{itemize}
+		\item Principally same as general backpropagation
+		\item Error messages are splitted at each node and then propagated to the childeren
+		\item Two differences resulting from the tree structure : 
+		\begin{itemize}
+			\item Split derivatives at each node
+			\item Sum derivatives of $W$ from all nodes
+		\end{itemize}
+		\item For optimization, plug the gradients in to the L-BFGS optimizaer (use batch training)
+		\item Best result were obtained using AdaGrad(Duchi et.al, 2011)
+	\end{itemize}
 }
 \section{Experimental Results}
+\frame{\tableofcontents}
 \subsection{Scene Understanding: Segmentation and Annotation}
 \frame
 {
@@ -342,5 +360,40 @@
 \frame
 {
   \frametitle{Supervised Parsing}
+  \begin{itemize}
+  	\item Train models using Wall Street Journal section of the Penn Treebank
+  	\item Performance of language parser (F-measure) is 90.29\% compared to 91.63\% for the widely used Berkeley parser (Petrov et.al., 2006)
+  	\item 72 seconds to parse 421 sentences (in the Matlab implementation)
+  \end{itemize}
+}
+\frame
+{
+	\frametitle{Nearest Neighbor Phrases}
+	\begin{columns}
+	\column{0.6\textwidth}
+	\begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=2.5in]{images/ex4.png}   
+		\end{center}   
+	\end{figure}
+	\column{0.5\textwidth} 
+	\begin{itemize}
+		\item Collect nearest neighbors for nodes of multi-word phrases
+		\item Embed complete sentences from WSJ dataset into the semantic space
+	\end{itemize}
+	\end{columns}
+}
+\section{Discussion}
+\frame
+{
+	\frametitle{Discussion - Simple RNN approach}
+	\begin{itemize}
+		\item Good results with single matrix RNN (efficient)
+		\item Single weight matrix RNN could capture some phenonmena but not adquate for more complete, higher order composition and parsing problems.
+		\item Cannot correctly predict phrase or word labels that are determined by context (in NLP): 
+			\begin{itemize}
+				\item Cannot predict that the word \textit{Android} is positive in the sentence \textit{Android beats iOS}
+			\end{itemize}
+	\end{itemize}
 }
 \end{document}
