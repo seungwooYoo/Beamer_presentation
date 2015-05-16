@@ -10,7 +10,10 @@
 \date{\today}
 
 \begin{document}
-\frame{\titlepage}
+\begin{frame}
+  \vspace*{1.5cm}\titlepage  
+  \centering Many figures are from Alex Graves phD thesis. 
+\end{frame}
 
 \section[Outline]{}
 \frame{\tableofcontents}
@@ -47,12 +50,20 @@
 \frame
 {
     \frametitle{RNN summary - Forward pass}
-	\begin{figure}[ht]  
-		\begin{center}
-			\includegraphics[width=1.6in]{Images/recurrentNN.png}   
-		\end{center}   
-		\caption{Illustrations of the RNN}
-	\end{figure}
+    \begin{columns}[c]
+    		\column{.3\textwidth}
+		\begin{figure}[ht]  
+			\begin{center}
+				\includegraphics[width=1.6in]{Images/recurrentNN.png}   
+			\end{center}   
+		\end{figure}
+    		\column{.6\textwidth}
+			\begin{figure}[ht]  
+    			\begin{center}
+    				\includegraphics[width=2.6in]{Images/standard_rnn.png}       			
+    			\end{center}
+    			\end{figure}
+	\end{columns}
     \begin{itemize}
         \item Hidden units : 
         $ a_h^t = {\sum_{i=1}^I} W_{ih}x_i^t + \sum_{h'=1}^H w_{h'h} {b_{h'}}^{t-1} $ \\
@@ -126,5 +137,116 @@
 	            \end{figure}
             \end{itemize}
     \end{itemize}
+}
+\frame
+{
+    \begin{itemize}
+        \item BDRNN and Causal tasks 
+            \begin{itemize} 
+                \item For tasks requiring future inputs, BDRNN cannot be applied (e.g., financial prediction, robot navigation and etc.)  
+                \item A task where the input sequences are spatial and not temporal is rightly applicable (e.g., protein prediction)
+                \item However, some temporal tasks can also be applied, as long as the network outputs are only needed at the end of some input segment (e.g., speech and handwriting recognition - data is usually divided up into sentences, lines, or dialogue turns and etc.)
+            \end{itemize}
+    \end{itemize}
+}
+\frame
+{
+    \frametitle{LSTM summary}
+	\begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=2.2in]{Images/LSTM.png}   
+		\end{center}   
+		\caption{LSTM structure}
+	\end{figure}
+}
+\frame
+{
+	\begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=3.2in]{Images/rnn_vanishing_gradients.png}   
+		\end{center}   
+		\caption{Vanishing gradient problem for RNNs}
+	\end{figure}
+	\vspace{-0.5cm}
+	\begin{itemize}
+		\item The sensitivity of the network decays exponentially over time as new inputs overwrite the activation of hidden unit and the network "forgets" the first input. 
+	\end{itemize}
+}
+\frame
+{
+	\begin{columns}
+		\column{0.5\textwidth}
+		\begin{figure}[ht]  
+			\begin{center}
+				\includegraphics[width=2.1in]{Images/LSTM.png}   
+			\end{center}   
+			\caption{\centering LSTM memory block with a single cell}
+		\end{figure}
+		\column{0.6\textwidth} 
+		\begin{itemize}
+		\item LSTM architecture - consists of a set of memory blocks	
+		\item Each block contains one or multiple self-connected memory cells and three multiplicative units	(analogous to memory chips in digital computer)
+			\begin{enumerate}
+			\item the input gate - write
+			\item the output gate - read
+			\item the forget gate - reset
+			\end{enumerate}
+		\end{itemize}
+	\end{columns}
+}
+\frame
+{
+	\begin{columns}
+		\column{0.5\textwidth}
+		\begin{figure}[ht]  
+			\begin{center}
+				\includegraphics[width=1.8in]{Images/LSTM_detail.png}   
+			\end{center}   
+			\caption{\centering LSTM memory block with a single cell}
+		\end{figure}
+		\column{0.4\textwidth} 
+		\begin{itemize}
+		\item Input / output gates multiply the input and and ouput of the cell 
+		\end{itemize}
+	\end{columns}
+}
+\frame
+{
+		\begin{figure}[ht]  
+			\begin{center}
+				\includegraphics[width=2.6in]{Images/LSTM_network.png}   
+			\end{center}   
+			\caption{\centering LSTM network consisting of four input units / a hidden layer of two single-cell LSTM memory blocks and five output units}
+		\end{figure}
+}
+\frame
+{
+		\begin{figure}[ht]  
+			\begin{center}
+				\includegraphics[width=2.6in]{Images/LSTM_preserving_gradient.png}   
+			\end{center}   
+			\caption{\centering Preservation of gradient information by LSTM}
+		\end{figure}
+}
+\frame
+{
+  \frametitle{Some comments from Andrew Ng}
+   \begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=4.5in]{Images/comment_rnn_ng.png}   
+		\end{center}   
+		\caption{Comments from Andrew Ng of RNN}
+	\end{figure}
+}
+\section{Clockwork RNN (CwRNN)}
+\frame
+{
+   \frametitle{Some comments from Schmidhuber}
+   \begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=4.2in]{Images/comment_cwrnn.png}   
+		\end{center}   
+		\caption{Comments from Schmidhuber of Clockwork RNN}
+	\end{figure}
 }
 \end{document}
