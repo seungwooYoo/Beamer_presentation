@@ -197,16 +197,60 @@
 \frame
 {
 	\begin{columns}
-		\column{0.5\textwidth}
+		\column{0.4\textwidth}
 		\begin{figure}[ht]  
 			\begin{center}
 				\includegraphics[width=1.8in]{Images/LSTM_detail.png}   
 			\end{center}   
 			\caption{\centering LSTM memory block with a single cell}
 		\end{figure}
-		\column{0.4\textwidth} 
+		\column{0.7\textwidth} 
 		\begin{itemize}
-		\item Input / output gates multiply the input and and ouput of the cell 
+		\item The most important componenet is the cell has a linear self-loop with forget gate: 
+		\begin{itemize}
+			\item Self-loop weight is controlled by a forget gate unit ${ f }$
+			\item Gated linear self-loop (leaky units or "Constant Error Carousel" (CEC)) helps gradients to be flown for a long durations. (Accumulate information - integration unit over a long duration) 
+			\item Using a forget gate, we also can forget the old state of a cell 
+		\end{itemize}
+		\end{itemize}
+	\end{columns}
+}
+\frame
+{
+	\begin{columns}
+		\column{0.4\textwidth}
+		\begin{figure}[ht]  
+			\begin{center}
+				\includegraphics[width=1.8in]{Images/LSTM_detail.png}   
+			\end{center}   
+			\caption{\centering LSTM memory block with a single cell}
+		\end{figure}
+		\column{0.7\textwidth} 
+		\begin{itemize}
+			\item The input and output gates multiply the input and output of the cell via multiplication (small black circles)
+			\item Forget gate multiplies the cell's previous state
+			\item The gate activation function '${ f }$' is usually the logistic sigmodid
+			\item The cell input and output activation fuctions ('${ g }$' and '${ h }$') are usually tanh or logistic sigmoid
+		\end{itemize}
+	\end{columns}
+}
+\frame
+{
+	\begin{columns}
+		\column{0.4\textwidth}
+		\begin{figure}[ht]  
+			\begin{center}
+				\includegraphics[width=1.8in]{Images/LSTM_detail.png}   
+			\end{center}   
+			\caption{\centering LSTM memory block with a single cell}
+		\end{figure}
+		\column{0.7\textwidth} 
+		\begin{itemize}
+			\item The weighted 'peephole' connections from the cell to the gates are shown as dashed lines
+			\begin{itemize}
+				\item Peephole connections - weighted connections from the CEC to the gates of the same memory block
+				\item If ther is no pephole connnections, none of the gates has access to the CECs when the output gate is closed. 
+			\end{itemize}	
 		\end{itemize}
 	\end{columns}
 }
@@ -227,6 +271,11 @@
 			\end{center}   
 			\caption{\centering Preservation of gradient information by LSTM}
 		\end{figure}
+		\vspace{-0.5cm}
+		\begin{itemize}
+			\item The black nodes - maximally sensitive / white nodes - entirely insensitive
+			\item The memory cell remembers the first input as long as the forget gate is open and the input gate is closed
+		\end{itemize}
 }
 \frame
 {
@@ -239,6 +288,116 @@
 	\end{figure}
 }
 \section{Clockwork RNN (CwRNN)}
+\frame
+{
+   \frametitle{Details of CwRNN}
+   \begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=4.2in]{Images/comment_cwrnn.png}   
+		\end{center}   
+		\caption{Comments from Schmidhuber of Clockwork RNN}
+	\end{figure}
+}
+\frame
+{
+   \frametitle{Experiments}
+   \begin{itemize}
+   	\item Experimental settup
+   		\begin{itemize}
+   			\item Compared to the simple RNN (SRNN) and LSTM networks
+   			\item All networks have one hidden layer with the \textit{tanh} activation function
+   			\item Number of nodes in the hidden layer was chosen to obtain the smae number of parameters for all three methods   			
+   			\item Initial values for all weights were drawn from a Gaussian distribution with zero mean with std 0.1
+   			\item Trained with SGD with Nesterov-style momentum
+   		\end{itemize}
+   \end{itemize}
+}
+\frame
+{
+   \frametitle{Experiments - Sequence Generation}
+   \begin{columns}
+		\column{0.4\textwidth}
+		\begin{figure}[ht]  
+			\begin{center}
+				\includegraphics[width=1.8in]{Images/cwrnn_graph.png}   
+			\end{center}   
+			\caption{\centering Sequence generation examples}
+		\end{figure}
+		\column{0.7\textwidth} 
+		\begin{itemize}		
+			\item The goal of this task - Generate a target sequence as accurately as possible
+			\item Five different target sequnces were created - sampling a pixece of music at 44.1Hz for 7ms
+			\item Resulting seqeunces were scaled to the interval [-1, 1]
+			\item All neteworks were trained over 2000 epochs
+			\item ${3\times10^{-1}}$ optimal for RNN/CwRNN and ${3\times10^{-5}}$ for LSTM
+		\end{itemize}
+	\end{columns}
+}
+\frame
+{
+	\begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=2.3in]{Images/cwrnn_sequence_result.png}   
+		\end{center}   
+	\end{figure}
+}
+\frame
+{
+	\begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=4.3in]{Images/cwrnn_output.png}   
+		\end{center}   
+	\end{figure}
+}
+\frame
+{
+   \frametitle{Experiments - Spoken Word Classification}
+   \begin{columns}
+		\column{0.55\textwidth}
+		\begin{itemize}		
+			\item Sequence classification containing an audio signal of one spoken word from the TIMIT dataset  
+			\item Dataset contains 25 different words arranged in 5 clusters based on their suffix 
+			\item Because of the suffix-similarity, network needs to learn long-term dependencies
+			\item 12 dimensional MFCC vector plus energy, 13 channels normzlied			
+		\end{itemize}
+		\column{0.55\textwidth} 
+		\begin{itemize}
+			\item \textbf{Cluster 1:} making, walking, cooking, looking, working
+			\item \textbf{Cluster 2:} biblical, cyclical, technical, classical, critical
+			\item \textbf{Cluster 3:} tradition, addition, audition, recognition, competition
+			\item \textbf{Cluster 4:} musicians, discussions, regulations, accusations, conditions
+			\item \textbf{Cluster 5:} subway, leeway, freeway, highway, hallway
+		\end{itemize}		
+	\end{columns}
+}
+\frame
+{
+	\begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=2.5in]{Images/cwrnn_word_classification.png}   
+		\end{center}   
+	\end{figure}
+}
+\frame
+{
+   \frametitle{Experiments - Online Handwritten Recognition}
+   \begin{figure}[ht]  
+			\begin{center}
+				\includegraphics[width=3.8in]{Images/cwrnn_handwritten.png}   
+			\end{center}   
+			\caption{\centering Sequence generation examples}
+	\end{figure}
+}
+\frame
+{
+   \frametitle{Discussion}
+   \begin{itemize}
+   	\item A simple mechanism to improve modeling of different time-scales
+   	\item Superior performance on sequence generation and classification
+   	\item Performance in Online handwriting recognition is in-between SRN and LSTM
+   	\item Module timings are not flexible enough for handwriting recognition
+   \end{itemize}
+}
 \frame
 {
    \frametitle{Some comments from Schmidhuber}
