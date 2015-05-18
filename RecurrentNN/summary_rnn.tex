@@ -69,7 +69,7 @@
         $ a_h^t = {\sum_{i=1}^I} W_{ih}x_i^t + \sum_{h'=1}^H w_{h'h} {b_{h'}}^{t-1} $ \\
         Usually initial values $b_i^0$ are chosen to zero / 
         Some cases RNN stability can be improved by using nonzero initial values.
-        \item Actifaction function :
+        \item Activaction function :
         $ b_h^t = \theta_h(a_h^t) $
         \item Output units : 
         $ a_k^t = \sum_{h=1}^H w_{hk}b_h^t $
@@ -102,7 +102,7 @@
 	\end{figure}
     \begin{itemize}
         \item BDRNN (Bidirectional recurrent neural network) 
-        \item Present each training sequence forwards and backwards to two seperate recurrent hidden layers, 
+        \item Present each training sequence forwards and backwards to two separate recurrent hidden layers, 
             both of which are connected to the same output layer
     \end{itemize}
 }
@@ -113,7 +113,7 @@
             \begin{itemize} 
                 \item Generally same as for a undirectional RNN, 
                 \item The input sequence is presented in opposite directions to the two hidden layers. 
-                \item The ouput layer is not updated until both hidden layers have processed the entire input sequence:
+                \item The output layer is not updated until both hidden layers have processed the entire input sequence:
 	            \begin{figure}[ht]  
 	            	\begin{center}
 	            		\includegraphics[width=3.5in]{Images/BDRNN_forward_pass.png}   
@@ -206,7 +206,7 @@
 		\end{figure}
 		\column{0.7\textwidth} 
 		\begin{itemize}
-		\item The most important componenet is the cell has a linear self-loop with forget gate: 
+		\item The most important component is the cell has a linear self-loop with forget gate: 
 		\begin{itemize}
 			\item Self-loop weight is controlled by a forget gate unit ${ f }$
 			\item Gated linear self-loop (leaky units or "Constant Error Carousel" (CEC)) helps gradients to be flown for a long durations. (Accumulate information - integration unit over a long duration) 
@@ -229,8 +229,8 @@
 		\begin{itemize}
 			\item The input and output gates multiply the input and output of the cell via multiplication (small black circles)
 			\item Forget gate multiplies the cell's previous state
-			\item The gate activation function '${ f }$' is usually the logistic sigmodid
-			\item The cell input and output activation fuctions ('${ g }$' and '${ h }$') are usually tanh or logistic sigmoid
+			\item The gate activation function '${ f }$' is usually the logistic sigmoid
+			\item The cell input and output activation functions ('${ g }$' and '${ h }$') are usually tanh or logistic sigmoid
 		\end{itemize}
 	\end{columns}
 }
@@ -249,7 +249,7 @@
 			\item The weighted 'peephole' connections from the cell to the gates are shown as dashed lines
 			\begin{itemize}
 				\item Peephole connections - weighted connections from the CEC to the gates of the same memory block
-				\item If ther is no pephole connnections, none of the gates has access to the CECs when the output gate is closed. 
+				\item If there is no peephole connections, none of the gates has access to the CECs when the output gate is closed. 
 			\end{itemize}	
 		\end{itemize}
 	\end{columns}
@@ -291,22 +291,92 @@
 \frame
 {
    \frametitle{Details of CwRNN}
-   \begin{figure}[ht]  
+   \begin{itemize}
+   	\item Like standard rnn (SRNN), CwRNN consists of input, hidden and output layers
+   	\item Unlike SRNN, the neurons in the hidden layer are partitioned into \textit{g} modules of size k. 
+   	\item Each of the modules is assigned a clock period ${T_n \in \{T_1, ..., T_g\} }$ 
+   	\item Each module is internally fully-interconnected / recurrent connections from module \textit{j} to module \textit{i} exists only if the period ${T_i}$ is smaller than period ${T_j}$
+   \end{itemize}
+}
+\frame
+{
+	\begin{figure}[ht]  
 		\begin{center}
-			\includegraphics[width=4.2in]{Images/comment_cwrnn.png}   
+			\includegraphics[width=4.1in]{Images/cwrnn.png}   
 		\end{center}   
-		\caption{Comments from Schmidhuber of Clockwork RNN}
 	\end{figure}
+   \begin{itemize}
+   	\item Sorting the modules by increasing period, connections between modules propagate the hidden state \textit{right-to-left} or \textit{slower to faster} modules.
+   \end{itemize}
+}
+\frame
+{
+	\begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=4.1in]{Images/cwrnn_fast_slow.png}   
+		\end{center}   
+		\caption{Simplified form of CwRNN}
+	\end{figure}
+}
+\frame
+{
+	\begin{itemize}
+		\item In case of CwRNN, only the output of modules ${i}$ satisfying (${t}$ MOD ${T_i}$) = 0 are executed		
+		\item In this paper, author uses the exponential series of periods : ${T_i = 2^{i-1} }$
+		\item Recall standard RNN output, ${y_O^{(t)}}$, at a time step ${t}$ : \\
+		\begin{center}
+			${ \mathbf{y}_H^{(t)} = f_H ( \mathbf{W}_H\times \mathbf{y}^{(t-1)} + \mathbf{W}_I\times \mathbf{x}^{(t)}) }$ \\
+			${ \mathbf{y}_O^{(t)} = f_O ( \mathbf{W}_O \times \mathbf{y}_H^{(t)} ) }$
+		\end{center}			
+		\item In case of CwRNN, block-row matrix is used for calculation
+	\end{itemize}	
+}
+\frame
+{
+	\begin{columns}
+	\column{0.5\textwidth}	
+	\begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=2.1in]{Images/cwrnn_calculation.png}   
+		\end{center}   
+	\end{figure}	
+						
+	\column{0.5\textwidth}	
+	\begin{itemize}
+		\item Matrices ${\mathbf{W}_H}$ and ${\mathbf{W}_I}$ are partitioned into ${g}$ blocks-rows: 
+	\end{itemize}	
+	\[
+	\mathbf{W}_H=
+  \begin{bmatrix}
+    \mathbf{W}_{H_1} \\
+    \vdots \\
+    \mathbf{W}_{H_g} 
+  \end{bmatrix}
+  %
+  \hspace{0.5cm}
+  %
+  \mathbf{W}_I=
+  \begin{bmatrix}
+    \mathbf{W}_{I_1} \\
+    \vdots \\
+    \mathbf{W}_{I_g} 
+  \end{bmatrix}
+\]
+  	\begin{itemize}
+  		\item ${ \mathbf{W}_H }$ is a block-upper triangular matrix
+  	\end{itemize}
+  	
+	\end{columns}
 }
 \frame
 {
    \frametitle{Experiments}
    \begin{itemize}
-   	\item Experimental settup
+   	\item Experimental setup
    		\begin{itemize}
    			\item Compared to the simple RNN (SRNN) and LSTM networks
    			\item All networks have one hidden layer with the \textit{tanh} activation function
-   			\item Number of nodes in the hidden layer was chosen to obtain the smae number of parameters for all three methods   			
+   			\item Number of nodes in the hidden layer was chosen to obtain the same number of parameters for all three methods   			
    			\item Initial values for all weights were drawn from a Gaussian distribution with zero mean with std 0.1
    			\item Trained with SGD with Nesterov-style momentum
    		\end{itemize}
@@ -326,9 +396,9 @@
 		\column{0.7\textwidth} 
 		\begin{itemize}		
 			\item The goal of this task - Generate a target sequence as accurately as possible
-			\item Five different target sequnces were created - sampling a pixece of music at 44.1Hz for 7ms
-			\item Resulting seqeunces were scaled to the interval [-1, 1]
-			\item All neteworks were trained over 2000 epochs
+			\item Five different target sequences were created - sampling a piece of music at 44.1Hz for 7ms
+			\item Resulting sequences were scaled to the interval [-1, 1]
+			\item All networks were trained over 2000 epochs
 			\item ${3\times10^{-1}}$ optimal for RNN/CwRNN and ${3\times10^{-5}}$ for LSTM
 		\end{itemize}
 	\end{columns}
@@ -358,7 +428,7 @@
 			\item Sequence classification containing an audio signal of one spoken word from the TIMIT dataset  
 			\item Dataset contains 25 different words arranged in 5 clusters based on their suffix 
 			\item Because of the suffix-similarity, network needs to learn long-term dependencies
-			\item 12 dimensional MFCC vector plus energy, 13 channels normzlied			
+			\item 12 dimensional MFCC vector plus energy, 13 channels normalized			
 		\end{itemize}
 		\column{0.55\textwidth} 
 		\begin{itemize}
@@ -390,16 +460,6 @@
 }
 \frame
 {
-   \frametitle{Discussion}
-   \begin{itemize}
-   	\item A simple mechanism to improve modeling of different time-scales
-   	\item Superior performance on sequence generation and classification
-   	\item Performance in Online handwriting recognition is in-between SRN and LSTM
-   	\item Module timings are not flexible enough for handwriting recognition
-   \end{itemize}
-}
-\frame
-{
    \frametitle{Some comments from Schmidhuber}
    \begin{figure}[ht]  
 		\begin{center}
@@ -407,5 +467,15 @@
 		\end{center}   
 		\caption{Comments from Schmidhuber of Clockwork RNN}
 	\end{figure}
+}
+\frame
+{
+   \frametitle{Discussion}
+   \begin{itemize}
+   	\item A simple mechanism to improve modeling of different time-scales
+   	\item Superior performance on sequence generation and classification
+   	\item Performance in Online handwriting recognition is in-between SRN and LSTM
+   	\item Module timings are not flexible enough for handwriting recognition
+   \end{itemize}
 }
 \end{document}
