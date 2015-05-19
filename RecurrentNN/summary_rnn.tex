@@ -325,7 +325,7 @@
 		\item In this paper, author uses the exponential series of periods : ${T_i = 2^{i-1} }$
 		\item Recall standard RNN output, ${y_O^{(t)}}$, at a time step ${t}$ : \\
 		\begin{center}
-			${ \mathbf{y}_H^{(t)} = f_H ( \mathbf{W}_H\times \mathbf{y}^{(t-1)} + \mathbf{W}_I\times \mathbf{x}^{(t)}) }$ \\
+			${ \mathbf{y}_H^{(t)} = f_H ( \mathbf{W}_H\times \mathbf{y}_H^{(t-1)} + \mathbf{W}_I\times \mathbf{x}^{(t)}) }$ \\
 			${ \mathbf{y}_O^{(t)} = f_O ( \mathbf{W}_O \times \mathbf{y}_H^{(t)} ) }$
 		\end{center}			
 		\item In case of CwRNN, block-row matrix is used for calculation
@@ -363,10 +363,46 @@
   \end{bmatrix}
 \]
   	\begin{itemize}
-  		\item ${ \mathbf{W}_H }$ is a block-upper triangular matrix
+  		\item ${ \mathbf{W}_H }$ is a block-upper triangular matrix and each block-row ${\mathbf{W}_{H_i}}$ is partitioned into block-columns 
+  		\{${0_1, \dots, 0_{i-1}, \mathbf{W}_{H_{i,i}}, \dots, \mathbf{W}_{H_{i,g}}}$\}
   	\end{itemize}
   	
 	\end{columns}
+}
+\frame
+{
+	\begin{columns}
+	\column{0.4\textwidth}	
+	\begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=2.1in]{Images/cwrnn_calculation.png}   
+		\end{center}   
+	\end{figure}							
+	\column{0.6\textwidth}	
+	\begin{itemize}
+		\item At each forward pass, only the block-rows of ${\mathbf{W}_H}$ and ${\mathbf{W}_I}$ is executed : 
+	\[
+	\mathbf{W}_{H_i}= \{
+	  \begin{array}{ll}
+	    \mathbf{W}_{H_i} & \text{for (t MOD ${T_i = 0}$)}\\
+	    0 &	\text{otherwise}    
+	  \end{array}
+	\]
+	\item Only corresponding parts of the output vector, ${\mathbf{y}_H}$ are updated ${\rightarrow}$ \\
+	the low-clock-rate modules can retain and output the long-term information, whereas high-clock-rate module focus on the local, high-frequency information
+	\end{itemize}		
+	\end{columns}
+}
+\frame
+{
+	\begin{itemize}
+		\item At backward propagation, similar to RNN		
+		\begin{itemize}
+			\item The only difference is that the error propagates only from modules that were executed at time step ${t}$
+		\end{itemize}
+		\item In case of computation time compared to SRNN, CwRNN runs faster with the same number of hidden nodes 
+		\item The lower bound for the CwRNN speedup compared with the SRNN is about four times		
+	\end{itemize}		
 }
 \frame
 {
@@ -428,7 +464,7 @@
 			\item Sequence classification containing an audio signal of one spoken word from the TIMIT dataset  
 			\item Dataset contains 25 different words arranged in 5 clusters based on their suffix 
 			\item Because of the suffix-similarity, network needs to learn long-term dependencies
-			\item 12 dimensional MFCC vector plus energy, 13 channels normalized			
+			\item 12 dimensional MFCC vector plus energy, normalized 13 channels are used
 		\end{itemize}
 		\column{0.55\textwidth} 
 		\begin{itemize}
@@ -455,17 +491,7 @@
 			\begin{center}
 				\includegraphics[width=3.8in]{Images/cwrnn_handwritten.png}   
 			\end{center}   
-			\caption{\centering Sequence generation examples}
-	\end{figure}
-}
-\frame
-{
-   \frametitle{Some comments from Schmidhuber}
-   \begin{figure}[ht]  
-		\begin{center}
-			\includegraphics[width=4.2in]{Images/comment_cwrnn.png}   
-		\end{center}   
-		\caption{Comments from Schmidhuber of Clockwork RNN}
+			\caption{\centering Online handwritten examples}
 	\end{figure}
 }
 \frame
@@ -476,6 +502,17 @@
    	\item Superior performance on sequence generation and classification
    	\item Performance in Online handwriting recognition is in-between SRN and LSTM
    	\item Module timings are not flexible enough for handwriting recognition
+   	\item Alternatively, may learn the periods as well (requiring differentiable modulo function for triggering the clocks)
    \end{itemize}
+}
+\frame
+{
+   \frametitle{Some comments from Schmidhuber}
+   \begin{figure}[ht]  
+		\begin{center}
+			\includegraphics[width=4.2in]{Images/comment_cwrnn.png}   
+		\end{center}   
+		\caption{Comments from Schmidhuber of Clockwork RNN}
+	\end{figure}
 }
 \end{document}
